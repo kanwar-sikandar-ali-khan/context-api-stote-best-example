@@ -1,0 +1,50 @@
+import { createContext, useEffect, useReducer } from "react"
+
+export const storePracticeContext = createContext();
+
+export const switchReducer = (state, action) => {
+    switch (action.type) {
+        case "updateName":
+            return { ...state, name: action.name };
+        default:
+            return state;
+
+    }
+}
+export const initialState = {
+    name: "John Doe",
+}
+
+export const persistState = () => {
+    try {
+      if (typeof window !== "undefined") {
+        const storedState = localStorage.getItem('globalStatePersistContextApi');
+        return storedState ? JSON.parse(storedState) : initialState; // Default state if nothing is stored
+      }
+    } catch (error) {
+      console.error("Error loading from localStorage:", error);
+      return initialState; // Fallback state
+    }
+  };
+
+export const StorePractice = ({children}) =>{
+const [state,dispatch] = useReducer(switchReducer, initialState)
+console.log("state", state)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem('globalStatePersistContextApi', JSON.stringify(state));
+    }
+  }, [state]);
+    return(
+        <div className="storePractice">
+            <storePracticeContext.Provider value={{state, dispatch}}>
+            {children}
+           </storePracticeContext.Provider>
+                
+
+        </div>
+    )
+}
+
+
