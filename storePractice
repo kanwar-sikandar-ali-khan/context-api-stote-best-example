@@ -1,50 +1,50 @@
-import { createContext, useEffect, useReducer } from "react"
+import { createContext, useEffect, useReducer } from 'react';
 
-export const storePracticeContext = createContext();
+export const StateContext = createContext();
+
+export const initialState = {
+  name: 'kanwar',
+  cart: []
+};
 
 export const switchReducer = (state, action) => {
-    switch (action.type) {
-        case "updateName":
-            return { ...state, name: action.name };
-        default:
-            return state;
+  switch (action.type) {
+    case 'changeName':
+      return { ...state, name: action.name };
+    case 'updateCart':
+      return { ...state, cart: action.cart };
+    default:
+      return state; // Important: Add default to handle unknown actions
+  }
+};
 
-    }
-}
-export const initialState = {
-    name: "John Doe",
-}
-
+// Lazy initializer function for useReducer
 export const persistState = () => {
-    try {
-      if (typeof window !== "undefined") {
-        const storedState = localStorage.getItem('globalStatePersistContextApi');
-        return storedState ? JSON.parse(storedState) : initialState; // Default state if nothing is stored
-      }
-    } catch (error) {
-      console.error("Error loading from localStorage:", error);
-      return initialState; // Fallback state
-    }
-  };
-
-export const StorePractice = ({children}) =>{
-const [state,dispatch] = useReducer(switchReducer, initialState)
-console.log("state", state)
-
-  useEffect(() => {
+  try {
     if (typeof window !== "undefined") {
-      localStorage.setItem('globalStatePersistContextApi', JSON.stringify(state));
+      const storedState = localStorage.getItem('globalStatePersistContextApi');
+      return storedState ? JSON.parse(storedState) : initialState; // Default state if nothing is stored
     }
-  }, [state]);
-    return(
-        <div className="storePractice">
-            <storePracticeContext.Provider value={{state, dispatch}}>
-            {children}
-           </storePracticeContext.Provider>
-                
-
-        </div>
-    )
-}
+  } catch (error) {
+    console.error("Error loading from localStorage:", error);
+    return initialState; // Fallback state
+  }
+};
 
 
+export const GlobalStateProvider = ({ children }) => {
+
+    const [state, dispatch] = useReducer(switchReducer, persistState())
+  
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem('globalStatePersistContextApi', JSON.stringify(state));
+      }
+    }, [state]);
+  
+    return (
+      <StateContext.Provider value={{ state, dispatch }}>
+        {children}
+      </StateContext.Provider>
+    );
+  };
